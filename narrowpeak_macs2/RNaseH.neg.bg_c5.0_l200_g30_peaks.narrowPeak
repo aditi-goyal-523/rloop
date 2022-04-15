@@ -1,0 +1,10 @@
+track type=narrowPeak name="RNaseH.neg.bg" description="RNaseH.neg.bg" nextItemButton=on
+chr1	68438	68661	RNaseH.neg.bg_narrowPeak1	91	.	0.00000	0.00000	0.00000	109
+chr1	564480	565437	RNaseH.neg.bg_narrowPeak2	1709	.	0.00000	0.00000	0.00000	754
+chr1	566164	566953	RNaseH.neg.bg_narrowPeak3	787	.	0.00000	0.00000	0.00000	558
+chr1	567248	567692	RNaseH.neg.bg_narrowPeak4	470	.	0.00000	0.00000	0.00000	137
+chr1	567875	568193	RNaseH.neg.bg_narrowPeak5	170	.	0.00000	0.00000	0.00000	102
+chr1	568779	569715	RNaseH.neg.bg_narrowPeak6	2477	.	0.00000	0.00000	0.00000	621
+chr1	1317683	1318140	RNaseH.neg.bg_narrowPeak7	102	.	0.00000	0.00000	0.00000	119
+chr1	2583656	2583872	RNaseH.neg.bg_narrowPeak8	67	.	0.00000	0.00000	0.00000	88
+chr1	2591213	2591491	RNaseH.neg.bg_narrowPeak9	50	.	0.00000	0.00000	0.00000	139

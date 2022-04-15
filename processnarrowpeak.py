@@ -29,6 +29,5 @@ df=readnarrowpeak(sys.argv[1])
 df=abridgenarrowpeak(df)
 df=processnarrowpeak(df)
 
-print(df)
-
+print(df.to_string())	
 print(statsnarrowpeak(df))
