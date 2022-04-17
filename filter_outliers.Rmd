@@ -1,0 +1,57 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+#library(tidyverse)
+```
+
+Reset Environment
+```{r}
+rm(list=ls()) 
+```
+
+Read Data
+
+```{r}
+df <- read.delim("C:/Users/aditi/Desktop/korf_lab/rloop/processed_narrowpeak/RNaseH.pos.processed.txt")
+```
+
+Filter out blacklisted region
+```{r}
+no_blacklist=df %>% filter(! start %in% (564449: 570371)) %>% filter(! start %in% (724136: 727043)) %>% filter(! start %in% (825006: 825115))
+
+no_blacklist=no_blacklist %>% filter(! end %in% (564449: 570371)) %>% filter(! end %in% (724136: 727043)) %>% filter(! end %in% (825006: 825115))
+
+attach(no_blacklist)
+```
+
+
+Get Initial Summary Statistics
+```{r}
+summary(length)
+sd(length)
+boxplot(length)
+
+summary(count)
+sd(count)
+boxplot(count)
+```
+Filter out outliers
+```{r}
+length_outliers=boxplot(length, plot=FALSE)$out
+count_outliers=boxplot(count, plot=FALSE)$out
+
+detach(no_blacklist)
+
+no_outliers=no_blacklist[-which(no_blacklist$length %in% length_outliers), ]
+no_outliers=no_outliers[-which(no_outliers$count %in% count_outliers), ]
+
+```
+
+```{r}
+
+write.csv(no_outliers, "filtered_narrowpeaks/RNaseH.pos.filtered.txt", row.names = FALSE)
+```
+
