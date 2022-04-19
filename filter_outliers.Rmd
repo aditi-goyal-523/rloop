@@ -4,7 +4,7 @@ output: html_notebook
 ---
 
 ```{r}
-library(tidyverse)
+#library(tidyverse)
 ```
 
 Reset Environment
@@ -15,7 +15,7 @@ rm(list=ls())
 Read Data
 
 ```{r}
-df <- read.delim("C:/Users/aditi/Desktop/korf_lab/rloop/processed_narrowpeak/RNaseH.pos.processed.txt")
+df <- read.delim("C:/Users/aditi/Desktop/korf_lab/rloop/processed_narrowpeak/LS61A.pos.processed.txt")
 ```
 
 Filter out blacklisted region
@@ -52,7 +52,6 @@ no_outliers=no_outliers[-which(no_outliers$count %in% count_outliers), ]
 ```
 
 ```{r}
-
-write.csv(no_blacklist, "filtered_narrowpeaks/RNaseH.pos.filtered.txt", row.names = FALSE)
+write.table(no_outliers[, 1:3], "bed_files_ucsc/LS61A.pos.filtered.txt", row.names = FALSE, col.names = FALSE, sep = " ",  quote=FALSE)
 ```
 
