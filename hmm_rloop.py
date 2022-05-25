@@ -78,12 +78,19 @@ for name, seq in nor_fasta:
     nor.append(seq)
 
 plus_freq=kmer_freq(plus, k)
+plus_freq=np.log(plus_freq)
+
 minus_freq=kmer_freq(minus, k)
+minus_freq=np.log(minus_freq)
+
 nor_freq=kmer_freq(nor, k)
+nor_freq=np.log(nor_freq)
 
 #emission probabilities
 plus_leave=1/avg_length(plus)
 plus_stay=1-plus_leave
+plus_leave=np.log(plus_leave)
+plus_stay=np.log(plus_stay)
 
 minus_leave=1/avg_length(minus)
 minus_stay=1-minus_leave
@@ -131,9 +138,9 @@ def plus_score(kmer, m, i):
     result={'p2p':-1, 'p2m':-1, 'p2n':-1}
     
     #store the p for 
-    result['p2p']=np.log(plus_freq[kmer]) + np.log(plus_stay) + np.log(m[0][i - 1][1])
-    result['p2m']=np.log(minus_freq[kmer]) + np.log(plus_leave) + np.log(m[0][i - 1][1])
-    result['p2n']=np.log(nor_freq[kmer]) + np.log(plus_leave) + np.log(m[0][i - 1][1])
+    result['p2p']=plus_freq[kmer] + plus_stay + np.log(m[0][i - 1][1])
+    result['p2m']=minus_freq[kmer] + plus_leave + np.log(m[0][i - 1][1])
+    result['p2n']=nor_freq[kmer] + np.log(plus_leave) + np.log(m[0][i - 1][1])
 
     max_val=max(result.values())
     max_key=max(result, key=result.get)
