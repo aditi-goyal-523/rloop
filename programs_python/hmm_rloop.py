@@ -1,10 +1,11 @@
 import argparse
+from inspect import trace
 import numpy as np
 
 import seqlib
 
 # Functions
-def kmer_freq(seqs, k):
+def kmer_log_freq(seqs, k):
     k_count = {}
     total = 0
     for seq in seqs:
@@ -20,7 +21,7 @@ def kmer_freq(seqs, k):
     freq = {}
 	
     for kmer in k_count:
-        freq[kmer] = k_count[kmer] / total
+        freq[kmer] = np.log(k_count[kmer] / total)
 	
     return freq
 
@@ -77,26 +78,32 @@ nor=[]
 for name, seq in nor_fasta:
     nor.append(seq)
 
-plus_freq=kmer_freq(plus, k)
-plus_freq=np.log(plus_freq)
+plus_freq=kmer_log_freq(plus, k)
 
-minus_freq=kmer_freq(minus, k)
-minus_freq=np.log(minus_freq)
+minus_freq=kmer_log_freq(minus, k)
 
-nor_freq=kmer_freq(nor, k)
-nor_freq=np.log(nor_freq)
+nor_freq=kmer_log_freq(nor, k)
+
 
 #emission probabilities
 plus_leave=1/avg_length(plus)
 plus_stay=1-plus_leave
-plus_leave=np.log(plus_leave)
-plus_stay=np.log(plus_stay)
 
 minus_leave=1/avg_length(minus)
 minus_stay=1-minus_leave
 
 nor_leave=(plus_leave+minus_leave)/2
 nor_stay=(plus_stay+minus_stay)/2
+
+#convert to log space
+plus_leave=np.log(plus_leave)
+plus_stay=np.log(plus_stay)
+
+minus_leave=np.log(minus_leave)
+minus_stay=np.log(minus_stay)
+
+nor_leave=np.log(nor_leave)
+nor_stay=np.log(nor_stay)
 
 
 
@@ -110,7 +117,7 @@ for name, seq in test_fasta:
     test.append(seq)
 
 test=''.join(test)
-test.upper()
+test=test.upper()
 
 kmers=[]
 for i in range(len(test) - k +1):
@@ -118,6 +125,7 @@ for i in range(len(test) - k +1):
     if "N" not in kmer:
         kmers.append(kmer)
 
+print(kmers)
 l=len(kmers)+1
 plus_row=[None]*l
 minus_row=[None]*l
@@ -125,9 +133,9 @@ nor_row=[None]*l
 
 matrix=[plus_row, minus_row, nor_row]
 
-matrix[0][0] = ("N", 0.05) #R loops occur across approximatley 5% of the genome
-matrix[1][0] = ("N", 0.05) #R loops occur across approximatley 5% of the genome
-matrix[2][0] = ("N", 0.90) #R loops occur across approximatley 5% of the genome
+matrix[0][0] = ("N", np.log(0.05)) #R loops occur across approximatley 5% of the genome
+matrix[1][0] = ("N", np.log(0.05)) #R loops occur across approximatley 5% of the genome
+matrix[2][0] = ("N", np.log(0.90)) #R loops occur across approximatley 5% of the genome
 
 #-----------------------------------------------
 #############   Scoring   ################
@@ -137,30 +145,30 @@ def plus_score(kmer, m, i):
     #make a dictionary of results
     result={'p2p':-1, 'p2m':-1, 'p2n':-1}
     
-    #store the p for 
-    result['p2p']=plus_freq[kmer] + plus_stay + np.log(m[0][i - 1][1])
-    result['p2m']=minus_freq[kmer] + plus_leave + np.log(m[0][i - 1][1])
-    result['p2n']=nor_freq[kmer] + np.log(plus_leave) + np.log(m[0][i - 1][1])
+    #store the log p for that combo
+    result['p2p']=plus_freq[kmer] + plus_stay + m[0][i - 1][1]
+    result['p2m']=minus_freq[kmer] + plus_leave + m[0][i - 1][1]
+    result['p2n']=nor_freq[kmer] + plus_leave + m[0][i - 1][1]
 
     max_val=max(result.values())
     max_key=max(result, key=result.get)
 
-    return((max_key, np.exp(max_val)))
+    return((max_key, max_val))
 
 def minus_score(kmer, m, i):
 
     #make a dictionary of results
     result={'m2m':-1, 'm2p':-1, 'm2n':-1}
     
-    #store the p for 
-    result['m2m']=np.log(minus_freq[kmer]) + np.log(minus_stay) + np.log(m[1][i - 1][1])
-    result['m2p']=np.log(plus_freq[kmer]) + np.log(minus_leave) + np.log(m[1][i - 1][1])
-    result['m2n']=np.log(nor_freq[kmer]) + np.log(minus_leave) + np.log(m[1][i - 1][1])
+    #store the log p for that combo
+    result['m2m']=(minus_freq[kmer]) + (minus_stay) + (m[1][i - 1][1])
+    result['m2p']=(plus_freq[kmer]) + (minus_leave) + (m[1][i - 1][1])
+    result['m2n']=(nor_freq[kmer]) + (minus_leave) + (m[1][i - 1][1])
 
     max_val=max(result.values())
     max_key=max(result, key=result.get)
 
-    return((max_key, np.exp(max_val)))
+    return((max_key, max_val))
 
 def nor_score(kmer, m, i):
 
@@ -168,14 +176,14 @@ def nor_score(kmer, m, i):
     result={'n2n':-1, 'n2p':-1, 'n2m':-1}
     
     #store the p for 
-    result['n2n']=np.log(nor_freq[kmer]) + np.log(nor_stay) + np.log(m[2][i - 1][1])
-    result['n2p']=np.log(plus_freq[kmer]) + np.log(nor_leave) + np.log(m[2][i - 1][1])
-    result['n2m']=np.log(minus_freq[kmer]) + np.log(nor_leave) + np.log(m[2][i - 1][1])
+    result['n2n']= (nor_freq[kmer]) +  (nor_stay) +  (m[2][i - 1][1])
+    result['n2p']= (plus_freq[kmer]) +  (nor_leave) +  (m[2][i - 1][1])
+    result['n2m']= (minus_freq[kmer]) +  (nor_leave) +  (m[2][i - 1][1])
 
     max_val=max(result.values())
     max_key=max(result, key=result.get)
 
-    return((max_key, np.exp(max_val)))
+    return((max_key, max_val))
 
 #-----------------------------------------------
 #############   Filling the Matrix   ################
@@ -188,6 +196,7 @@ for i in range(1, len(kmers)+1):
 
 #-----------------------------------------------
 #############   Traceback   ################
+
 
 def trace_to_dir(tup):
     if '2p' in tup[0]: #aka the kmer ends in a plus R loop state
@@ -208,6 +217,9 @@ while j>=0:
     max_tup=max(plus_tup, minus_tup, nor_tup)
     traceback[j]=trace_to_dir(max_tup)
     j-=1
+
+print(traceback)
+print(len(traceback))
 
 
 
